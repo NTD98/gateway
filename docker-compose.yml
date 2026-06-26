@@ -39,6 +39,19 @@ services:
     ports:
       - "8081:8080"
 
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   api-gateway:
     build:
       context: .
@@ -53,12 +66,15 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
-      - KEYCLOAK_ISSUER_URI=http://keycloak:8080/realms/myrealm
+      - KEYCLOAK_ISSUER_URI=http://keycloak:8080/realms/master
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      eureka-server:
+        condition: service_started
 
 volumes:
   postgres_data:
