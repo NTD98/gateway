@@ -66,7 +66,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
-      - KEYCLOAK_ISSUER_URI=http://keycloak:8080/realms/master
+      - KEYCLOAK_JWK_SET_URI=http://keycloak:8080/realms/master/protocol/openid-connect/certs
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
       postgres:

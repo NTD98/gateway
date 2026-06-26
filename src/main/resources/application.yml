@@ -32,7 +32,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8081/realms/master}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://keycloak:8080/realms/master/protocol/openid-connect/certs}
 
   # SSL Dynamic Reload configuration
   ssl:
