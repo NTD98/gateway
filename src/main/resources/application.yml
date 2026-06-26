@@ -1,0 +1,66 @@
+spring:
+  application:
+    name: api-gateway
+  
+  # Enable Virtual Threads
+  threads:
+    virtual:
+      enabled: true
+
+  # JDBC configuration
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/gateway_db}
+    username: ${SPRING_DATASOURCE_USERNAME:user}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+  
+  # Redis configuration for Rate Limiting
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+
+  # Security Configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/myrealm}
+
+  # SSL Dynamic Reload configuration
+  ssl:
+    bundle:
+      pem:
+        gateway-bundle:
+          reload-on-update: true
+          key:
+            location: "file:/etc/gateway/certs/privkey.pem"
+          certificate:
+            location: "file:/etc/gateway/certs/fullchain.pem"
+
+server:
+  port: 8443
+  # ssl:
+  #   bundle: gateway-bundle # Uncomment this when certificates actually exist on disk, or gateway will fail to start.
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+
+# Eureka Client Configuration
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
