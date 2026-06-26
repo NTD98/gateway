@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import jakarta.annotation.PostConstruct;
 
-import static org.springframework.cloud.gateway.server.mvc.filter.TokenRelayFilterFunctions.tokenRelay;
 import static org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions.route;
 
 @Service
@@ -78,8 +77,6 @@ public class RouteSyncService {
 
                     var routeBuilder = route(entity.getRouteId())
                             .route(combinedPredicate, HandlerFunctions.http(entity.getUri()));
-
-                    routeBuilder.filter(tokenRelay());
 
                     if (entity.getUri() != null && entity.getUri().startsWith("lb://")) {
                         String serviceId = entity.getUri().replace("lb://", "");
