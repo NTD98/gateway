@@ -8,8 +8,8 @@ This gateway is designed to route requests dynamically using configurations (Rou
 
 ## Architecture Overview
 
-### 1. Inbound Request Verification Flow (Gateway as Server)
-This flow handles verifying the signature of incoming requests from clients.
+### 1. Inbound Request Verification & Authorization Flow (Gateway as Server)
+This flow handles verifying the signature of incoming requests and checking if the authenticated client is authorized to access the specific route.
 
 ```mermaid
 graph TD
@@ -30,8 +30,17 @@ graph TD
     FetchPublicKey --> VerifyInbound{Signature Valid?}:::decision
     VerifyInbound -- No --> RejectSignature[Reject HTTP 401]:::failure
     VerifyInbound -- Yes --> Authenticate[Authenticate client <br> Set SecurityContext]:::success
-    Authenticate --> RouteTree[2. Forward to Routing Layer]:::process
+    
+    Authenticate --> RouteTree[2. Forward to Routing Layer <br> Match Route]:::process
     PassInbound --> RouteTree
+
+    RouteTree --> AuthzCheck{3. Route has <br> allowed_clients?}:::decision
+    AuthzCheck -- No --> ProceedRouting[Proceed to Downstream / Outbound Filters]:::success
+    AuthzCheck -- Yes --> RouteAuthz[4. RouteAuthorizationFilter]:::process
+    
+    RouteAuthz --> VerifyAuthz{Is Client ID <br> in allowed_clients?}:::decision
+    VerifyAuthz -- No --> RejectAuthz[Reject HTTP 403 <br> Forbidden]:::failure
+    VerifyAuthz -- Yes --> ProceedRouting
 ```
 
 ### 2. Outbound Request Signing Flow (Gateway as Client)
