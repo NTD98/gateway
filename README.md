@@ -8,6 +8,9 @@ This gateway is designed to route requests dynamically using configurations (Rou
 
 ## Architecture Overview
 
+### 1. Inbound Request Verification Flow (Gateway as Server)
+This flow handles verifying the signature of incoming requests from clients.
+
 ```mermaid
 graph TD
     classDef process fill:#1a73e8,stroke:#1a73e8,color:#fff;
@@ -15,8 +18,7 @@ graph TD
     classDef success fill:#1e8e3e,stroke:#1e8e3e,color:#fff;
     classDef failure fill:#d93025,stroke:#d93025,color:#fff;
 
-    %% Inbound Flow
-    Start([Client Request]) --> InboundFilter[1. RequestSigningValidationFilter]:::process
+    StartInbound([Client Request Received]) --> InboundFilter[1. RequestSigningValidationFilter]:::process
     InboundFilter --> InboundHeaders{Has X-Client-Id, <br> X-Timestamp, X-Signature?}:::decision
     
     InboundHeaders -- No --> PassInbound[Pass to Next Filter <br> e.g. JWT / Public Path]:::process
@@ -28,20 +30,29 @@ graph TD
     FetchPublicKey --> VerifyInbound{Signature Valid?}:::decision
     VerifyInbound -- No --> RejectSignature[Reject HTTP 401]:::failure
     VerifyInbound -- Yes --> Authenticate[Authenticate client <br> Set SecurityContext]:::success
-    
-    %% Routing
-    Authenticate --> RouteTree[2. DynamicRouterFunction <br> Match Route]:::process
+    Authenticate --> RouteTree[2. Forward to Routing Layer]:::process
     PassInbound --> RouteTree
+```
+
+### 2. Outbound Request Signing Flow (Gateway as Client)
+This flow handles signing outgoing requests before forwarding them to third-party external APIs.
+
+```mermaid
+graph TD
+    classDef process fill:#1a73e8,stroke:#1a73e8,color:#fff;
+    classDef decision fill:#f9ab00,stroke:#f9ab00,color:#000;
+    classDef success fill:#1e8e3e,stroke:#1e8e3e,color:#fff;
+    classDef failure fill:#d93025,stroke:#d93025,color:#fff;
+
+    StartOutbound([Gateway Routing Request]) --> RouteTree[1. Match Route in gateway_routes]:::process
+    RouteTree --> OutboundCheck{Does Route have <br> OutboundSign Filter?}:::decision
     
-    %% Outbound Flow
-    RouteTree --> OutboundCheck{3. Route has <br> OutboundSign Filter?}:::decision
-    
-    OutboundCheck -- No --> ForwardDirect[Forward to Downstream]:::process
-    OutboundCheck -- Yes --> OutboundSign[4. OutboundSigningFilter]:::process
+    OutboundCheck -- No --> ForwardDirect[Forward to Downstream as-is]:::success
+    OutboundCheck -- Yes --> OutboundSign[2. OutboundSigningFilter]:::process
     
     OutboundSign --> FetchPrivateKey[Fetch Gateway Private Key <br> from gateway_keys]:::process
-    FetchPrivateKey --> GenerateSig[Generate Outbound Signature <br> over Method, Path, Time, Body]:::process
-    GenerateSig --> AddHeaders[Append Outbound Headers <br> X-Signature, X-Timestamp]:::process
+    FetchPrivateKey --> GenerateSig[3. Generate Outbound Signature <br> over Method, Path, Time, Body]:::process
+    GenerateSig --> AddHeaders[4. Append Outbound Headers <br> X-Signature, X-Timestamp]:::process
     AddHeaders --> ForwardSigned[5. Forward Signed Request <br> to Third-Party API]:::success
 ```
 
