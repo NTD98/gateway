@@ -13,3 +13,13 @@ CREATE TABLE IF NOT EXISTS gateway_certificates (
     certificate_pem TEXT NOT NULL,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS gateway_keys (
+    key_alias VARCHAR(255) PRIMARY KEY,
+    key_type VARCHAR(50) NOT NULL,
+    algorithm VARCHAR(50) NOT NULL,
+    key_value TEXT NOT NULL,
+    purpose VARCHAR(50) NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

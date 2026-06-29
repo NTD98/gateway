@@ -68,8 +68,7 @@ services:
       - SPRING_DATA_REDIS_PORT=6379
       - KEYCLOAK_JWK_SET_URI=http://keycloak:8080/realms/master/protocol/openid-connect/certs
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-    volumes:
-      - ./certs:/etc/gateway/certs
+
     depends_on:
       postgres:
         condition: service_healthy

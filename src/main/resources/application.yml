@@ -34,20 +34,12 @@ spring:
         jwt:
           jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://keycloak:8080/realms/master/protocol/openid-connect/certs}
 
-  # SSL Dynamic Reload configuration
-  ssl:
-    bundle:
-      pem:
-        gateway-bundle:
-          reload-on-update: true
-          keystore:
-            certificate: "file:/etc/gateway/certs/fullchain.pem"
-            private-key: "file:/etc/gateway/certs/privkey.pem"
+
 
 server:
   port: 8443
   ssl:
-    bundle: gateway-bundle # Uncomment this when certificates actually exist on disk, or gateway will fail to start.
+    bundle: gateway-bundle
 
 management:
   endpoints:
@@ -63,3 +55,7 @@ eureka:
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
+
+logging:
+  level:
+    com.example.api_gateway: DEBUG

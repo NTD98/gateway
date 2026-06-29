@@ -2,6 +2,7 @@ package com.example.api_gateway.routing;
 
 import com.example.api_gateway.model.GatewayRouteEntity;
 import com.example.api_gateway.repository.RouteRepository;
+import com.example.api_gateway.ssl.GatewayKeyCache;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -29,11 +30,16 @@ public class RouteSyncService {
     private final RouteRepository routeRepository;
     private final ObjectMapper objectMapper;
     private final DynamicRouterFunction dynamicRouterFunction;
+    private final GatewayKeyCache gatewayKeyCache;
 
-    public RouteSyncService(RouteRepository routeRepository, ObjectMapper objectMapper, DynamicRouterFunction dynamicRouterFunction) {
+    public RouteSyncService(RouteRepository routeRepository, 
+                            ObjectMapper objectMapper, 
+                            DynamicRouterFunction dynamicRouterFunction,
+                            GatewayKeyCache gatewayKeyCache) {
         this.routeRepository = routeRepository;
         this.objectMapper = objectMapper;
         this.dynamicRouterFunction = dynamicRouterFunction;
+        this.gatewayKeyCache = gatewayKeyCache;
     }
 
     @PostConstruct
@@ -78,9 +84,28 @@ public class RouteSyncService {
                     var routeBuilder = route(entity.getRouteId())
                             .route(combinedPredicate, HandlerFunctions.http(entity.getUri()));
 
+                    // Apply Load Balancer filter if URI starts with lb://
                     if (entity.getUri() != null && entity.getUri().startsWith("lb://")) {
                         String serviceId = entity.getUri().replace("lb://", "");
                         routeBuilder.filter(LoadBalancerFilterFunctions.lb(serviceId));
+                    }
+
+                    // Parse and apply route filters (e.g., OutboundSign)
+                    if (entity.getFilters() != null && !entity.getFilters().isBlank()) {
+                        List<Map<String, Object>> filters = objectMapper.readValue(
+                                entity.getFilters(), new TypeReference<>() {});
+                        for (Map<String, Object> filter : filters) {
+                            String name = (String) filter.get("name");
+                            @SuppressWarnings("unchecked")
+                            Map<String, String> args = (Map<String, String>) filter.get("args");
+
+                            if ("OutboundSign".equalsIgnoreCase(name) && args != null && args.containsKey("keyAlias")) {
+                                String keyAlias = args.get("keyAlias");
+                                String clientId = args.getOrDefault("clientId", "gateway");
+                                routeBuilder.filter(OutboundSigningFilter.sign(gatewayKeyCache, keyAlias, clientId));
+                                log.info("Applied OutboundSign filter to route '{}' using key alias '{}'", entity.getRouteId(), keyAlias);
+                            }
+                        }
                     }
 
                     RouterFunction<ServerResponse> currentRoute = routeBuilder.build();
