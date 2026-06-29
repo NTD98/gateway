@@ -89,10 +89,7 @@ public class CertificateSyncService {
                     }
                 }
 
-                KeyStore trustStore = KeyStore.getInstance("PKCS12");
-                trustStore.load(null, null);
-
-                SslStoreBundle storeBundle = SslStoreBundle.of(keyStore, dummyPassword, trustStore);
+                SslStoreBundle storeBundle = SslStoreBundle.of(keyStore, dummyPassword, null);
                 SslBundle newBundle = SslBundle.of(
                     storeBundle,
                     SslBundleKey.of(dummyPassword),
