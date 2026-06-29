@@ -19,7 +19,7 @@ public class DbSslConfig {
         try {
             java.security.KeyStore dummyStore = java.security.KeyStore.getInstance("PKCS12");
             dummyStore.load(null, null);
-            org.springframework.boot.ssl.SslStoreBundle storeBundle = org.springframework.boot.ssl.SslStoreBundle.of(dummyStore, "", null);
+            org.springframework.boot.ssl.SslStoreBundle storeBundle = org.springframework.boot.ssl.SslStoreBundle.of(dummyStore, "", dummyStore);
             org.springframework.boot.ssl.SslBundle dummyBundle = org.springframework.boot.ssl.SslBundle.of(
                 storeBundle,
                 org.springframework.boot.ssl.SslBundleKey.NONE,
