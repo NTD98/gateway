@@ -40,15 +40,14 @@ spring:
       pem:
         gateway-bundle:
           reload-on-update: true
-          key:
-            location: "file:/etc/gateway/certs/privkey.pem"
-          certificate:
-            location: "file:/etc/gateway/certs/fullchain.pem"
+          keystore:
+            certificate: "file:/etc/gateway/certs/fullchain.pem"
+            private-key: "file:/etc/gateway/certs/privkey.pem"
 
 server:
   port: 8443
-  # ssl:
-  #   bundle: gateway-bundle # Uncomment this when certificates actually exist on disk, or gateway will fail to start.
+  ssl:
+    bundle: gateway-bundle # Uncomment this when certificates actually exist on disk, or gateway will fail to start.
 
 management:
   endpoints:
