@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS gateway_routes (
     predicates JSONB NOT NULL,
     filters JSONB NOT NULL,
     rate_limit_replenish INT DEFAULT 10,
-    rate_limit_burst INT DEFAULT 20
+    rate_limit_burst INT DEFAULT 20,
+    allowed_clients TEXT
 );
 
 CREATE TABLE IF NOT EXISTS gateway_certificates (

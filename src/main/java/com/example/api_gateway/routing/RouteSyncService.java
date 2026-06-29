@@ -90,6 +90,11 @@ public class RouteSyncService {
                         routeBuilder.filter(LoadBalancerFilterFunctions.lb(serviceId));
                     }
 
+                    // Apply Route Authorization filter if allowedClients is configured
+                    if (entity.getAllowedClients() != null && !entity.getAllowedClients().isBlank()) {
+                        routeBuilder.filter(RouteAuthorizationFilter.authorize(entity.getAllowedClients()));
+                    }
+
                     // Parse and apply route filters (e.g., OutboundSign)
                     if (entity.getFilters() != null && !entity.getFilters().isBlank()) {
                         List<Map<String, Object>> filters = objectMapper.readValue(

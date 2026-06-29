@@ -15,6 +15,7 @@ public class GatewayRouteEntity {
     private String filters;
     private Integer rateLimitReplenish;
     private Integer rateLimitBurst;
+    private String allowedClients;
 
     // Getters and Setters
 
@@ -64,5 +65,13 @@ public class GatewayRouteEntity {
 
     public void setRateLimitBurst(Integer rateLimitBurst) {
         this.rateLimitBurst = rateLimitBurst;
+    }
+
+    public String getAllowedClients() {
+        return allowedClients;
+    }
+
+    public void setAllowedClients(String allowedClients) {
+        this.allowedClients = allowedClients;
     }
 }
